@@ -1,6 +1,6 @@
 .userGWAS_main <- function(i, cores, k, n, I_LD, V_LD, S_LD, std.lv, varSNPSE2, order, SNPs, beta_SNP, SE_SNP,
                            varSNP, GC, coords, smooth_check, TWAS, printwarn, toler, estimation, sub, Model1,
-                           df, npar, utilfuncs=NULL, basemodel=NULL, returnlavmodel=FALSE,Q_SNP,model) {
+                           df, npar, utilfuncs=NULL, basemodel=NULL, returnlavmodel=FALSE,Q_SNP,model,GN) {
   # utilfuncs contains utility functions to enable this code to work on PSOC clusters (for Windows)
   if (!is.null(utilfuncs)) {
     for (j in names(utilfuncs)) {
@@ -52,12 +52,23 @@
   ##run the model. save failed runs and run model. warning and error functions prevent loop from breaking if there is an error.
   if(estimation == "DWLS"){
     if (!is.null(basemodel)) {
-      test <- .tryCatch.W.E(Model1_Results <- lavaan(sample.cov = S_Fullrun, WLS.V=W, ordered=NULL, sampling.weights = NULL,se="standard",
+        if(GN == TRUE){
+              test <- .tryCatch.W.E(Model1_Results <- lavaan(sample.cov = S_Fullrun, WLS.V=W, ordered=NULL, sampling.weights = NULL,se="standard",
+                                                     sample.mean=NULL, sample.th=NULL, sample.nobs=2, group=NULL, cluster= NULL, constraints='', NACOV=NULL,
+                                                     slotOptions=basemodel@Options, slotParTable=basemodel@ParTable, slotSampleStats=NULL,
+                                                     slotData=basemodel@Data, slotModel=basemodel@Model, slotCache=NULL, sloth1=NULL, optim.method="gn"))
+        } else {
+              test <- .tryCatch.W.E(Model1_Results <- lavaan(sample.cov = S_Fullrun, WLS.V=W, ordered=NULL, sampling.weights = NULL,se="standard",
                                                      sample.mean=NULL, sample.th=NULL, sample.nobs=2, group=NULL, cluster= NULL, constraints='', NACOV=NULL,
                                                      slotOptions=basemodel@Options, slotParTable=basemodel@ParTable, slotSampleStats=NULL,
                                                      slotData=basemodel@Data, slotModel=basemodel@Model, slotCache=NULL, sloth1=NULL))
+        }
     } else {
-      test <- .tryCatch.W.E(Model1_Results <- sem(Model1, sample.cov = S_Fullrun, estimator = "DWLS",se="standard", WLS.V = W, sample.nobs = 2, optim.dx.tol = .01,std.lv=std.lv))
+      if(GN == TRUE){
+          test <- .tryCatch.W.E(Model1_Results <- sem(Model1, sample.cov = S_Fullrun, estimator = "DWLS",se="standard", WLS.V = W, sample.nobs = 2, optim.dx.tol = .01,std.lv=std.lv,optim.method="gn"))
+      } else {
+          test <- .tryCatch.W.E(Model1_Results <- sem(Model1, sample.cov = S_Fullrun, estimator = "DWLS",se="standard", WLS.V = W, sample.nobs = 2, optim.dx.tol = .01,std.lv=std.lv))
+      }
     }
   } else if(estimation == "ML"){
     if (!is.null(basemodel)) {
