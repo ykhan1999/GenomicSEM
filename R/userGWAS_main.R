@@ -213,7 +213,8 @@
     #Pull P1 (the eigen vectors of V_eta)
     P1 <- eigen(V_full)$vectors
     
-    implied <- as.matrix(fitted(Model1_Results))[1]
+    implied <- lavaan::lavInspect(Model1_Results, "implied")$cov
+    implied <- list(implied)
     implied_order <- colnames(S_Fullrun)
     implied[[1]] <- implied[[1]][implied_order,implied_order]
     implied2 <- S_Fullrun-implied[[1]]
